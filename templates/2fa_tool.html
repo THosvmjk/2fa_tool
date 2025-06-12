@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FACEID24.COM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background-color: #FFFFFF;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(100, 181, 246, 0.15);
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid #90CAF9;
+        }
+        h1 {
+            text-align: center;
+            color: #1976D2;
+            margin-bottom: 30px;
+            font-size: 24px;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #2196F3;
+            font-weight: 500;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #BBDEFB;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: all 0.3s;
+            background-color: #F5F9FF;
+        }
+        input:focus {
+            outline: none;
+            border-color: #64B5F6;
+            background-color: #FFFFFF;
+            box-shadow: 0 0 0 3px rgba(100, 181, 246, 0.1);
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #1976D2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+        }
+        .result {
+            margin-top: 30px;
+            text-align: center;
+            padding: 20px;
+            background-color: #F5F9FF;
+            border-radius: 8px;
+            border: 1px solid #BBDEFB;
+        }
+        .code {
+            font-size: 32px;
+            font-weight: bold;
+            color: #1976D2;
+            margin: 10px 0;
+            letter-spacing: 2px;
+        }
+        .timer {
+            color: #2196F3;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 20px;
+        }
+        .footer a {
+            color: #2196F3;
+            text-decoration: none;
+            font-weight: 800;
+            animation: blink 1.5s infinite;
+        }
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><a href="https://www.faceid24.com" target="_blank"style="text-decoration: none; color: inherit;">FACEID24.COM</a></h1>
+        <div class="input-group">
+            <label for="secret">2FA</label>
+            <input type="text" id="secret" placeholder="ใส่รหัส 2FA">
+        </div>
+        <button onclick="generateCode()">สร้างรหัส</button>
+        <div class="result">
+            <div class="code" id="code">-</div>
+            <div class="timer" id="timer"></div>
+        </div>
+        <div class="footer">
+<a href="https://www.faceid24.com" target="_blank">เว็บขายเฟสไทย-นอก</a>
+        </div>
+    </div>
+
+    <script>
+        let timerInterval;
+
+        function generateCode() {
+            const secret = document.getElementById('secret').value;
+            if (!secret) {
+                alert('ใส่รหัส 2FA ที่มี');
+                return;
+            }
+
+            fetch('/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ secret: secret })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+                document.getElementById('code').textContent = data.code;
+                updateTimer(data.time_left);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('เกิดข้อผิดพลาดในการสร้างรหัส');
+            });
+        }
+
+        function updateTimer(timeLeft) {
+            clearInterval(timerInterval);
+            const timerElement = document.getElementById('timer');
+            
+            function update() {
+                if (timeLeft <= 0) {
+                    timeLeft = 30;
+                    generateCode();
+                }
+                timerElement.textContent = `รหัสจะเปลี่ยนในอีก ${timeLeft} วินาที`;
+                timeLeft--;
+            }
+
+            update();
+            timerInterval = setInterval(update, 1000);
+        }
+    </script>
+</body>
+</html> 
